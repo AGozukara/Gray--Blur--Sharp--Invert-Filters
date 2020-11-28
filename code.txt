@@ -1,0 +1,129 @@
+namespace Filters
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        private Bitmap makegray(Bitmap bmp)
+        {
+            // Making the input frame grayed.
+            for (int i = 0; i < bmp.Height - 1; i++)
+            {
+                for (int j = 0; j < bmp.Width - 1; j++)
+                {
+                    // Summing greeen, red and blue values and dividing result by three for every pixel one by one.
+                    int grayvalue = (bmp.GetPixel(j, i).R + bmp.GetPixel(j, i).G + bmp.GetPixel(j, i).B) / 3;
+                    Color clr;
+                    // Assining the new value of pixel to RGB.
+                    clr = Color.FromArgb(grayvalue, grayvalue, grayvalue);
+                    bmp.SetPixel(j, i, clr);
+                }
+            }
+            return bmp;
+        }
+        private Bitmap makeblur(Bitmap bmp)
+        {
+            int a = 2;
+            // Making the input frame blurred.
+            for (int i = 0; i < bmp.Height - 1; i++)
+            {
+                for (int j = 0; j < bmp.Width - 1; j++)
+                {
+                    // Forcing to compute at border with try-catch(Expection){} method for following operations. 
+                    try
+                    {
+                        //Summing RGB values for up, down, left and right pixel
+                        // Blurring level will be increase by increasing the value a.
+                        Color prevx = bmp.GetPixel(j - a, i);
+                        Color nextx = bmp.GetPixel(j + a, i);
+                        Color prevy = bmp.GetPixel(j, i - a);
+                        Color nexty = bmp.GetPixel(j, i + a);
+                        // Finding avarage values for total red, green and blue values. And, assigning them to middle pixel. 
+                        int avgR = (int)((prevx.R + nextx.R + prevy.R + nexty.R) / 4);
+                        int avgG = (int)((prevx.G + nextx.G + prevy.G + nexty.G) / 4);
+                        int avgB = (int)((prevx.B + nextx.B + prevy.B + nexty.B) / 4);
+                        Color clr;
+                        clr = Color.FromArgb(avgR, avgG, avgB);
+                        bmp.SetPixel(j, i, clr);
+
+                    }
+                    catch (Exception) { }
+
+                    //P.S: try-catch ignores errors while operating at borders.(F.i; we do not have up and left pixel at the first pixel) 
+                }
+
+            }
+            return bmp;
+
+        }
+        private Bitmap makesharp(Bitmap bmp, Bitmap a)
+        {
+            Color clr1;
+            int t = 2;  // Sharpness will be increase by increasing the value t.
+            int R;
+            int G;
+            int B;
+            //Making sharp the input image with 3x3 convolutional matrix.
+
+            int[] matris = { 0, -2, 0, -2, 11, -2, 0, -2, 0 };
+            int sum = 3; // summation of matrix elements
+            int totalR, totalG, totalB;
+            for (int x = (t - 1) / 2; x < (bmp.Height - (t - 1)) / 2; x++)
+            {
+                for (int y = (t - 1) / 2; y < (bmp.Width - (t - 1)) / 2; y++)
+                {
+                    int k = 0;
+                    totalB = 0;
+                    totalG = 0;
+                    totalR = 0;
+                    for (int i = -(t - 1) / 2; 1 <= (t - 1) / 2; i++)
+                    {
+                        for (int j = -(t - 1) / 2; j <= (t - 1) / 2; j++)
+                        {
+                            try
+                            {
+                                clr1 = a.GetPixel(x + i, y + j);
+                                totalR = totalR + (clr1.R * matris[k]);
+                                totalG = totalG + (clr1.G * matris[k]);
+                                totalB = totalB + (clr1.B * matris[k]);
+                                R = totalR / sum;
+                                G = totalG / sum;
+                                B = totalB / sum;
+                                // Since R, G and B value cannot be less than zero or bigger than 255, we limit the values between 0-255.
+                                if (R > 255) R = 255;
+                                if (G > 255) G = 255;
+                                if (B > 255) B = 255;
+                                if (R < 0) R = 0;
+                                if (G < 0) G = 0;
+                                if (B < 0) B = 0;
+                                bmp.SetPixel(x, y, Color.FromArgb(R, G, B));
+                                k++;
+                            }
+                            catch (Exception) { };
+                        }
+                    }
+                }
+            }
+            return bmp;
+        }
+        private Bitmap makeinvert(Bitmap bmp)
+        {
+            // Making the input image inverted.
+            for (int i = 0; i < bmp.Height - 1; i++)
+            {
+                for (int j = 0; j < bmp.Width - 1; j++)
+                {
+                    // Substituting R, G and B values from 255 and assigning new R, G, B values
+                    Color pixs = bmp.GetPixel(j, i);
+                    int r = pixs.R;
+                    int g = pixs.G;
+                    int b = pixs.B;
+                    Color clr;
+                    clr = Color.FromArgb((255 - r), (255 - g), (255 - b));
+                    bmp.SetPixel(j, i, clr);
+                }
+            }
+            return bmp;
+        }
